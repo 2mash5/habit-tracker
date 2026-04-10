@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import HabitGrid from './HabitGrid'
 
 function App() {
   const [habits, setHabits] = useState([
@@ -74,6 +75,7 @@ function App() {
             />
             <span className={habit.done ? 'done' : ''}>{habit.name}</span>
             <span>🔥 {habit.currentStreak}</span>
+            <HabitGrid recentDates={habit.recentDates} />
             <button onClick={() => deleteHabit(habit.id)}>Delete</button>
           </li>
         ))}
