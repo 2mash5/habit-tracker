@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import HabitGrid from './HabitGrid'
 
 function App() {
   const [habits, setHabits] = useState([
@@ -8,6 +9,7 @@ function App() {
     { id: 3, name: 'Drink water', done: false, currentStreak: 0, longestStreak: 0, lastCompletedDate: null, recentDates: [] },
   ])
   const [input, setInput] = useState('')
+  const [expandedId, setExpandedId] = useState(null)
 
   function addHabit() {
     if (!input.trim()) return
@@ -74,6 +76,10 @@ function App() {
             />
             <span className={habit.done ? 'done' : ''}>{habit.name}</span>
             <span>🔥 {habit.currentStreak}</span>
+            <button onClick={() => setExpandedId(expandedId === habit.id ? null : habit.id)}>
+              {expandedId === habit.id ? 'Hide' : 'Show'}
+            </button>
+            {expandedId === habit.id && <HabitGrid recentDates={habit.recentDates} />}
             <button onClick={() => deleteHabit(habit.id)}>Delete</button>
           </li>
         ))}
