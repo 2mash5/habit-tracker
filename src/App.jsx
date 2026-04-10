@@ -3,47 +3,51 @@ import './App.css'
 
 function App() {
   const [habits, setHabits] = useState([
-    { id: 1, name: 'Read 30 minutes', done: false, completedDates: [] },
-    { id: 2, name: 'Exercise', done: false, completedDates: [] },
-    { id: 3, name: 'Drink water', done: false, completedDates: [] },
+    { id: 1, name: 'Read 30 minutes', done: false, currentStreak: 0, longestStreak: 0, lastCompletedDate: null, recentDates: [] },
+    { id: 2, name: 'Exercise', done: false, currentStreak: 0, longestStreak: 0, lastCompletedDate: null, recentDates: [] },
+    { id: 3, name: 'Drink water', done: false, currentStreak: 0, longestStreak: 0, lastCompletedDate: null, recentDates: [] },
   ])
   const [input, setInput] = useState('')
 
   function addHabit() {
     if (!input.trim()) return
-    setHabits([...habits, { id: Date.now(), name: input, done: false, completedDates: [] }])
+    setHabits([...habits, { id: Date.now(), name: input, done: false, currentStreak: 0, longestStreak: 0, lastCompletedDate: null, recentDates: [] }])
     setInput('')
   }
 
-function toggleHabit(id) {
-  const today = new Date().toISOString().split('T')[0]
-  setHabits(habits.map(habit => {
-    if (habit.id !== id) return habit
-    const alreadyDone = habit.completedDates.includes(today)
-    return {
-      ...habit,
-      done: !habit.done,
-      completedDates: alreadyDone
-        ? habit.completedDates.filter(d => d !== today)
-        : [...habit.completedDates, today]
-    }
-  }))
-}
+  function toggleHabit(id) {
+    const today = new Date().toISOString().split('T')[0]
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
 
-function calculateStreak(completedDates) {
-  let streak = 0
-  let date = new Date()
-  while (true) {
-    const dateStr = date.toISOString().split('T')[0]
-    if (completedDates.includes(dateStr)) {
-      streak++
-      date.setDate(date.getDate() - 1)
-    } else {
-      break
-    }
+    setHabits(habits.map(habit => {
+      if (habit.id !== id) return habit
+
+      const alreadyDone = habit.recentDates.includes(today)
+
+      let newDates = alreadyDone
+        ? habit.recentDates.filter(d => d !== today)
+        : [...habit.recentDates, today].slice(-90)
+
+      let newStreak = alreadyDone
+        ? habit.currentStreak - 1
+        : habit.lastCompletedDate === yesterday
+          ? habit.currentStreak + 1
+          : 1
+
+      newStreak = Math.max(0, newStreak)
+
+      const newLongest = Math.max(habit.longestStreak, newStreak)
+
+      return {
+        ...habit,
+        done: !habit.done,
+        recentDates: newDates,
+        currentStreak: newStreak,
+        longestStreak: newLongest,
+        lastCompletedDate: alreadyDone ? null : today,
+      }
+    }))
   }
-  return streak
-}
 
   return (
     <div>
@@ -63,7 +67,7 @@ function calculateStreak(completedDates) {
               onChange={() => toggleHabit(habit.id)}
             />
             <span className={habit.done ? 'done' : ''}>{habit.name}</span>
-            <span>🔥 {calculateStreak(habit.completedDates)}</span>
+            <span>🔥 {habit.currentStreak}</span>
           </li>
         ))}
       </ul>
