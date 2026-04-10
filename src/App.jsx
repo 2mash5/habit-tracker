@@ -49,6 +49,12 @@ function App() {
     }))
   }
 
+  function deleteHabit(id) {
+    if (window.confirm('Delete this habit?')) {
+      setHabits(habits.filter(habit => habit.id !== id))
+    }
+  }
+
   return (
     <div>
       <h1>Habit Tracker</h1>
@@ -68,6 +74,7 @@ function App() {
             />
             <span className={habit.done ? 'done' : ''}>{habit.name}</span>
             <span>🔥 {habit.currentStreak}</span>
+            <button onClick={() => deleteHabit(habit.id)}>Delete</button>
           </li>
         ))}
       </ul>
