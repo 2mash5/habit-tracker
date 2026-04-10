@@ -3,22 +3,50 @@ import './App.css'
 
 function App() {
   const [habits, setHabits] = useState([
-    { id: 1, name: 'Read 30 minutes', done: false },
-    { id: 2, name: 'Exercise', done: false },
-    { id: 3, name: 'Drink water', done: false },
+    { id: 1, name: 'Read 30 minutes', done: false, currentStreak: 0, longestStreak: 0, lastCompletedDate: null, recentDates: [] },
+    { id: 2, name: 'Exercise', done: false, currentStreak: 0, longestStreak: 0, lastCompletedDate: null, recentDates: [] },
+    { id: 3, name: 'Drink water', done: false, currentStreak: 0, longestStreak: 0, lastCompletedDate: null, recentDates: [] },
   ])
   const [input, setInput] = useState('')
 
   function addHabit() {
     if (!input.trim()) return
-    setHabits([...habits, { id: Date.now(), name: input, done: false }])
+    setHabits([...habits, { id: Date.now(), name: input, done: false, currentStreak: 0, longestStreak: 0, lastCompletedDate: null, recentDates: [] }])
     setInput('')
   }
 
   function toggleHabit(id) {
-    setHabits(habits.map(habit =>
-      habit.id === id ? { ...habit, done: !habit.done } : habit
-    ))
+    const today = new Date().toISOString().split('T')[0]
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+
+    setHabits(habits.map(habit => {
+      if (habit.id !== id) return habit
+
+      const alreadyDone = habit.recentDates.includes(today)
+
+      let newDates = alreadyDone
+        ? habit.recentDates.filter(d => d !== today)
+        : [...habit.recentDates, today].slice(-90)
+
+      let newStreak = alreadyDone
+        ? habit.currentStreak - 1
+        : habit.lastCompletedDate === yesterday
+          ? habit.currentStreak + 1
+          : 1
+
+      newStreak = Math.max(0, newStreak)
+
+      const newLongest = Math.max(habit.longestStreak, newStreak)
+
+      return {
+        ...habit,
+        done: !habit.done,
+        recentDates: newDates,
+        currentStreak: newStreak,
+        longestStreak: newLongest,
+        lastCompletedDate: alreadyDone ? null : today,
+      }
+    }))
   }
 
   return (
@@ -39,6 +67,7 @@ function App() {
               onChange={() => toggleHabit(habit.id)}
             />
             <span className={habit.done ? 'done' : ''}>{habit.name}</span>
+            <span>🔥 {habit.currentStreak}</span>
           </li>
         ))}
       </ul>
