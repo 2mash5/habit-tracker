@@ -8,7 +8,6 @@ function App() {
     { id: 3, name: 'Drink water', done: false, currentStreak: 0, longestStreak: 0, lastCompletedDate: null, recentDates: [] },
   ])
   const [input, setInput] = useState('')
-  const [confirmingId, setConfirmingId] = useState(null)
 
   function addHabit() {
     if (!input.trim()) return
@@ -51,12 +50,9 @@ function App() {
   }
 
   function deleteHabit(id) {
-    setConfirmingId(id)
-  }
-
-  function confirmDelete(id) {
-    setHabits(habits.filter(habit => habit.id !== id))
-    setConfirmingId(null)
+    if (window.confirm('Delete this habit?')) {
+      setHabits(habits.filter(habit => habit.id !== id))
+    }
   }
 
   return (
@@ -78,15 +74,7 @@ function App() {
             />
             <span className={habit.done ? 'done' : ''}>{habit.name}</span>
             <span>🔥 {habit.currentStreak}</span>
-            {confirmingId === habit.id ? (
-              <>
-                <span>Are you sure?</span>
-                <button onClick={() => confirmDelete(habit.id)}>Yes</button>
-                <button onClick={() => setConfirmingId(null)}>No</button>
-              </>
-            ) : (
-              <button onClick={() => deleteHabit(habit.id)}>Delete</button>
-            )}
+            <button onClick={() => deleteHabit(habit.id)}>Delete</button>
           </li>
         ))}
       </ul>
